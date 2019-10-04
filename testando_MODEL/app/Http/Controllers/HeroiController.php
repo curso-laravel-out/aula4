@@ -4,18 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Heroi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HeroiController extends Controller
 {
     public function index(Request $request)
     {
         if($request->method() === 'GET') {
-            if($request->id) {
-                $heroi = Heroi::find($request->id);
-                return "<img src='$heroi->foto'/>";
-            }
-
-            return Heroi::all();
+            return view('herois.index', ['herois' => Heroi::paginate(3)]);
         }
 
         $heroi                     = new Heroi();
@@ -30,13 +26,24 @@ class HeroiController extends Controller
 
         return redirect('/herois');
     }
+
+    public function mostra(Request $request)
+    {
+        if($request->id) {
+            $heroi = Heroi::find($request->id);
+            return view('herois.details', compact('heroi'));
+        }
+    }
+
     public function update()
     {
         return 'atualizando o heroi';
     }
-    public function delete()
+    
+    public function delete(Request $request)
     {
-        return 'removendo o heroi';
+        DB::table('herois')->where('id', $request->id)->delete();
+        return redirect('/herois');
     }
 }
 
