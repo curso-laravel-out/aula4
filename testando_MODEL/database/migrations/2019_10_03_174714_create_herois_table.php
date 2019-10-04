@@ -14,6 +14,7 @@ class CreateHeroisTable extends Migration
     public function up()
     {
         Schema::create('herois', function (Blueprint $table) {
+            $table->charset = 'utf8';
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('identidade_secreta');

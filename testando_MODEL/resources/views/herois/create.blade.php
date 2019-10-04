@@ -8,7 +8,7 @@
                 <div class="card-header">Novo Herói</div>
 
                 <div class="card-body">
-                    <form action="/herois" method="post">
+                    <form action="/herois" method="post" enctype="multipart/form-data">
                         @csrf
                         <p>Nome:</p>
                         <input type="text" name="nome" id="nome">
