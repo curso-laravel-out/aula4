@@ -16,10 +16,14 @@ Route::get('/', function () {
 });
 
 Auth::routes();
+
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::match(['get', 'post'], '/herois', 'HeroiController@index');
-Route::view('/herois/novo', 'herois.create');
+Route::middleware('auth')->group(function () {
+    Route::get('/usuarios', 'UserController@index')->name('usuarios.list');
+    Route::get('/usuarios2', 'UserController@index2')->name('usuarios2.list');
 
-Route::get('/herois/id/{id}', 'HeroiController@mostra');
-Route::delete('/herois', 'HeroiController@delete');
+    Route::get('/herois', 'HeroiController@index')->name('herois.list');
+    Route::get('/herois/novo', 'HeroiController@create')->name('herois.novo');
+    Route::post('/herois/salva-novo', 'HeroiController@store')->name('herois.salvanovo');
+});

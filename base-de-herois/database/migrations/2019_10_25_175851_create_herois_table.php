@@ -14,12 +14,14 @@ class CreateHeroisTable extends Migration
     public function up()
     {
         Schema::create('herois', function (Blueprint $table) {
-            $table->charset = 'utf8';
             $table->bigIncrements('id');
-            $table->string('name');
-            $table->string('identidade_secreta');
-            $table->string('origem');
-            $table->binary('foto');
+            $table->string('nome', 100);
+            $table->string('identidade_secreta', 255)->nullable();
+            $table->string('origem', 100)->nullable();
+            $table->enum('forca', ['forte', 'média', 'fraca']);
+            $table->boolean('terraqueo');
+            $table->boolean('pode_voar');
+            $table->binary('foto')->nullable();
             $table->timestamps();
         });
     }
