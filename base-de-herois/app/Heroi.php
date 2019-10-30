@@ -13,4 +13,15 @@ class Heroi extends Model
     // defaults
     // protected $table = 'herois';
     // protected $primaryKey = 'id';
+
+    public function getTerraqueoAttribute($valor)
+    {
+        return $valor ? 'Sim' : 'Não';
+    }
+
+    public function getPodeVoarAttribute($valor)
+    {
+        return $valor ? 'Sim' : 'Não';
+    }
+
 }

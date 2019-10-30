@@ -26,4 +26,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/herois', 'HeroiController@index')->name('herois.list');
     Route::get('/herois/novo', 'HeroiController@create')->name('herois.novo');
     Route::post('/herois/salva-novo', 'HeroiController@store')->name('herois.salvanovo');
+
+    Route::get('/herois/detalhes/{id}', "HeroiController@ficha")->name('herois.detalhes');
+
+    Route::get('/herois/editar/{id}', "HeroiController@editar")->name('herois.editar');
+    Route::post('/herois/salvar', "HeroiController@salvar")->name('herois.salvar');
+
+    Route::delete('/herois/excluir', 'HeroiController@excluir')->name('herois.excluir');
+
 });
