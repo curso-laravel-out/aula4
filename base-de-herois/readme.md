@@ -25,15 +25,10 @@ RUN cd ~ && \
     curl -sS https://getcomposer.org/installer -o composer-setup.php && \
     php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
-# instala node
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-    apt-get -qq install -y nodejs build-essential
-
 # instala dependencias do composer e node e configura laravel
-ENTRYPOINT ["bash", "-c", "composer install && mv .env.dsv .env && \
+ENTRYPOINT ["bash", "-c", "composer install && mv .env.example .env && \
     php artisan key:generate &&  \
-    chmod -R 755 . && chmod -R 777 storage bootstrap/cache && chown -R www-data:www-data . && \
-    npm ci && npm run production"]
+    chmod -R 755 . && chmod -R 777 storage bootstrap/cache && chown -R www-data:www-data . "]
 ```
 
 ```docker
