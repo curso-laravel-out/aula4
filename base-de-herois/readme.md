@@ -1,72 +1,56 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
+# 
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+1. criar arquivo database.sqlite no diretorio /database
+2. executar comando
+   ``` php artisan migrate #gera as tabelas ```
+   
+   
+```docker
+FROM nexus-imagens.pbh.gov.br/prodabel/debian-stretch-slim_apache-2.4_php7.2_oracle_mssqlserver AS builder
 
-## About Laravel
+USER root
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+WORKDIR /var/www/html
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# instala extensoes php (cli)
+RUN apt-get -qq update -y
+RUN apt-get install -y unzip php7.2-soap php7.2-zip && \
+    echo 'extension=oci8.so' >> /etc/php/7.2/cli/php.ini && \
+    echo 'extension=pdo_oci.so' >> /etc/php/7.2/cli/php.ini && \
+    echo 'extension=sqlsrv.so' >> /etc/php/7.2/cli/conf.d/20-sqlsrv.ini && \
+    echo 'extension=pdo_sqlsrv.so' >> /etc/php/7.2/cli/conf.d/30-pdo_sqlsrv.ini
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+# instala composer
+RUN cd ~ && \
+    curl -sS https://getcomposer.org/installer -o composer-setup.php && \
+    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
-## Learning Laravel
+# instala node
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+    apt-get -qq install -y nodejs build-essential
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# instala dependencias do composer e node e configura laravel
+ENTRYPOINT ["bash", "-c", "composer install && mv .env.dsv .env && \
+    php artisan key:generate &&  \
+    chmod -R 755 . && chmod -R 777 storage bootstrap/cache && chown -R www-data:www-data . && \
+    npm ci && npm run production"]
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```docker
+FROM nexus-imagens.pbh.gov.br/prodabel/debian-stretch-slim_apache-2.4_php7.2_oracle_mssqlserver AS publisher
 
-## Laravel Sponsors
+# instala extensoes laravel
+RUN apt-get -qq update -y
+RUN apt-get install -y unzip php7.2-soap php7.2-zip
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+# configura apache para o laravel
+RUN sed -i 's#DocumentRoot /var/www/html#DocumentRoot /var/www/html/public#' /etc/apache2/sites-available/000-default.conf && \
+    sed -i 's#<Directory /var/www/html>#<Directory /var/www/html/public>#' /etc/apache2/sites-available/000-default.conf && \
+    sed -i 's#AllowOverride None#AllowOverride All#' /etc/apache2/sites-available/000-default.conf
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
+WORKDIR /var/www/html
 
-## Contributing
+COPY . .
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+CMD ["service", "apache2", "start"]
+```
